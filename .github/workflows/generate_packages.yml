@@ -1,0 +1,91 @@
+name: Generate Packages(1)
+
+on:
+  release:
+    types: [published]
+  schedule:
+    - cron: '0 0 * * *'
+  push:
+    branches:
+      - main
+
+jobs:
+  starting-job:
+    permissions: write-all
+    name: Add Cron Message
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add Cron Message
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_name=$(gh release view --json name --jq '.name')
+          gh release view --json body --jq '.body' > notes.txt
+          echo "---" >> notes.txt
+          echo "###### Starting Job $(date '+%Y-%m-%d %H:%M')" >> notes.txt
+          gh release edit "$tag_name" --notes-file notes.txt
+
+  generate-packages:
+    permissions: write-all
+    name: Generate Packages 1
+    outputs:
+      failed: ${{ steps.failed.outputs.failed }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Packages
+        run: .github/workflows/generate_packages.sh
+
+      - name: Upload zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_name=$(gh release view --json name --jq '.name')
+          for file in /tmp/packages/*.zip; do
+            gh release upload "$tag_name" "$file" --clobber
+          done
+
+  generate-metas:
+    permissions: write-all
+    name: Generate Metas
+    runs-on: ubuntu-latest
+    needs: [generate-packages]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install -r ./.github/workflows/requirements_generate_metadata.txt
+
+      - name: Generate Metas
+        run: python .github/workflows/generate_metadata.py
+
+      - name: Upload meta
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_name=$(gh release view --json name --jq '.name')
+          gh release upload "$tag_name" "/tmp/paq-packages.toml" --clobber
+
+  ending-job:
+    permissions: write-all
+    name: Add Cron Message
+    runs-on: ubuntu-latest
+    needs: [generate-metas, starting-job]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add Cron Message
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_name=$(gh release view --json name --jq '.name')
+          gh release view --json body --jq '.body' > notes.txt
+          echo "###### Ending Job $(date '+%Y-%m-%d %H:%M')" >> notes.txt
+          gh release edit "$tag_name" --notes-file notes.txt
