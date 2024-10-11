@@ -21,4 +21,5 @@ paq config add-repo "https://github.com/Saverio976/paq-packages2/releases/latest
 - [jq](./packages/jq)
 - [kubectl](./packages/kubectl)
 - [ollama](./packages/ollama)
+- ~~[ollamalib](./packages/ollamalib)~~ (this is a dependency for **ollama** package)
 - [stern](./packages/stern)
