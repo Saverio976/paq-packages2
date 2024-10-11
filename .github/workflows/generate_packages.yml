@@ -64,7 +64,7 @@ jobs:
         run: pip install -r ./.github/workflows/requirements_generate_metadata.txt
 
       - name: Generate Metas
-        run: python .github/workflows/generate_metadata.py
+        run: python .github/workflows/generate_metadata.py "paq-packages2"
 
       - name: Upload meta
         env:
