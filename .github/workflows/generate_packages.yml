@@ -76,7 +76,7 @@ jobs:
     permissions: write-all
     name: Generate Metas
     runs-on: ubuntu-latest
-    needs: [generate-packages]
+    needs: [generate-packages, generate-packages-ollama]
     steps:
       - uses: actions/checkout@v4
 
