@@ -4,12 +4,11 @@ import requests
 import zipfile
 import pathlib
 import re
-import sys
 from hashlib import md5
 
 PACKAGES_FILE = "/tmp/paq-packages.toml"
 with open(PACKAGES_FILE, "w") as f:
-    f.write(f"name = \"{sys.argv[1]}\"\n\n")
+    f.write("name = \"paq-packages2\"\n\n")
 
 LOG_FILE = "/tmp/paq-packages.log"
 with open(LOG_FILE, "w") as f:
