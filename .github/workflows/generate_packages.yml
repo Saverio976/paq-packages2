@@ -50,7 +50,7 @@ jobs:
 
   generate-packages-ollama:
     permissions: write-all
-    name: Generate Some Packages 1
+    name: Generate Packages Ollama
     outputs:
       failed: ${{ steps.failed.outputs.failed }}
     runs-on: ubuntu-latest
