@@ -37,7 +37,31 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate Packages
-        run: .github/workflows/generate_packages.sh
+        run: .github/workflows/generate_packages.sh "./packages/ollama" "./packages/ollamalib"
+
+      - name: Upload zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_name=$(gh release view --json name --jq '.name')
+          for file in /tmp/packages/*.zip; do
+            gh release upload "$tag_name" "$file" --clobber
+          done
+
+  generate-packages-ollama:
+    permissions: write-all
+    name: Generate Some Packages 1
+    outputs:
+      failed: ${{ steps.failed.outputs.failed }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Packages ollama
+        run: .github/workflows/generate_package.sh "./packages/ollama"
+
+      - name: Generate Packages ollamalib
+        run: .github/workflows/generate_package.sh "./packages/ollamalib"
 
       - name: Upload zip
         env:
